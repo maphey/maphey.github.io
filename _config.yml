@@ -1,4 +1,4 @@
-markdown: rdiscount
+future: true
 permalink: /:title/
 url: http://maphey.github.io/
 name: maphey
@@ -9,4 +9,5 @@ github: maphey
 highlighter: rouge
 safe: true
 paginate: 20
+truncate: true
 about: 个人博客，欢迎交流。
