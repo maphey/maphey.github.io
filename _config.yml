@@ -6,7 +6,7 @@ author: maphey
 email: maphey@qq.com
 duoshuo: maphey
 github: maphey
-pygments: true
+highlighter: pygments
 safe: true
 paginate: 20
 about: 个人博客，欢迎交流。
