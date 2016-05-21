@@ -6,8 +6,7 @@ author: maphey
 email: maphey@qq.com
 duoshuo: maphey
 github: maphey
-highlighter: rouge
-safe: true
 paginate: 20
+highlighter: rouge
 truncate: true
 about: 个人博客，欢迎交流。
