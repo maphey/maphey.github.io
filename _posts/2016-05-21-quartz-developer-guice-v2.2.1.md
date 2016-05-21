@@ -2,7 +2,7 @@
 date: 2016-05-21 11:49:12+08:00
 layout: post
 title: Quartz开发指南
-thread: 002
+thread: 2
 categories: 翻译
 tags: quartz
 ---
