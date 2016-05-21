@@ -1,4 +1,6 @@
 markdown: kramdown
+kramdown:
+  input: GFM
 future: true
 permalink: /:title/
 url: http://maphey.github.io/
