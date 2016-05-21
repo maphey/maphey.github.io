@@ -10,40 +10,40 @@ tags: quartz
 # Quartz调度器开发指南
 V 2.2.1
 
-### 目录
-#### [使用Quartz API](#1)
-###### [实例化Scheduler](#1.1)
-###### [关键接口](#1.2)
-###### [Job和Trigger](#1.3)
-#### [使用Job和JobDetail](#2)
-###### [Job和JobDetail](#2.1)
-#### [使用trigger](#3)
-###### [Trigger](#3.1)
-###### [SimpleTrigger](#3.2)
-###### [CronTriggers](#3.3)
-#### [使用TriggerListener和JobListener](#4)
-###### [TriggerListener和JobListener](#4.1)
-###### [创建你自己的监听器](#4.2)
-#### [使用SchedulerListener](#5)
-###### [SchedulerListener](#5.1)
-###### [添加一个SchedulerListener](#5.2)
-###### [移除一个SchedulerListener](#5.3)
-#### [使用JobStore](#6)
-###### [关于JobStores](#6.1)
-###### [RAMJobStore](#6.2)
-###### [JDBCJobStore](#6.3)
-###### [TerracottaJobStore](#6.4)
-#### [配置，Scheduler Factory和日志](#7)
-###### [配置组件](#7.1)
-###### [Scheduler工厂](#7.2)
-###### [日志](#7.3)
-#### [Quartz调度器的其他特性](#8)
-###### [插件](#8.1)
-###### [JobFactory](#8.2)
-###### [Factory自带Job](#8.3)
-#### [高级功能](#9)
-###### [集群](#9.1)
-###### [JTA事务](#9.2)
+## 目录
+### [使用Quartz API](#1)
+[实例化Scheduler](#1.1)
+[关键接口](#1.2)
+[Job和Trigger](#1.3)
+### [使用Job和JobDetail](#2)
+[Job和JobDetail](#2.1)
+### [使用trigger](#3)
+[Trigger](#3.1)
+[SimpleTrigger](#3.2)
+[CronTriggers](#3.3)
+### [使用TriggerListener和JobListener](#4)
+[TriggerListener和JobListener](#4.1)
+[创建你自己的监听器](#4.2)
+### [使用SchedulerListener](#5)
+[SchedulerListener](#5.1)
+[添加一个SchedulerListener](#5.2)
+[移除一个SchedulerListener](#5.3)
+### [使用JobStore](#6)
+[关于JobStores](#6.1)
+[RAMJobStore](#6.2)
+[JDBCJobStore](#6.3)
+[TerracottaJobStore](#6.4)
+### [配置，Scheduler Factory和日志](#7)
+[配置组件](#7.1)
+[Scheduler工厂](#7.2)
+[日志](#7.3)
+### [Quartz调度器的其他特性](#8)
+[插件](#8.1)
+[JobFactory](#8.2)
+[Factory自带Job](#8.3)
+### [高级功能](#9)
+[集群](#9.1)
+[JTA事务](#9.2)
 
 <h2 id="1">使用Quartz API</h2>
 <h4 id="1.1">实例化Scheduler</h4>
@@ -125,7 +125,7 @@ public interface Job {
 
 <p>为什么会同时有job和trigger？许多工作调度器没有单独的job和trigger的概念。一些定义一个job只是一个执行时间（或计划）以及一些小的工作标识符。其它的大部分就像Quartz的job和triiger对象的结合体。Quartz旨在创建一个分离的scheduler和scheduler的执行。这个设计有很多好处。</p>
 <p>例如，你可以创建独立于trigger的job并将他们存储在job scheduler。这使你能在同一个job上关联多个trigger。另一个解耦的好处是，能够在scheduler关联的trigger已过期时仍能配置job。这使你在重新安排它们后，不用重新定义它们。它还允许您修改或替换一个trigger，而不必重新定义相关的job。</p>
-##### 特性
+特性
 <p>当Job和trigger注册进Quartz scheduler时给出了key。Job和trigger（JobKey和TriggerKey）的key允许它们放被放置到group中，group可用于分类组织你得job和trigger，例如“报表job”和“维护job”。Job或者trigger的key值在group中必须是唯一的。换句话说，job或trigger的完整的key(或标识)是由key和group组成。</p>
 <p>有关job和trigger的详细信息,请参见第6页“Job和JobDetails”和第10页“使用trigger”。</p>
  
@@ -166,7 +166,7 @@ public class HelloJob implements Job {
 <p>请注意我们给scheduler一个JobDetail实例，而且它知道要执行的job的类型，只需提供我们构建JobDetail的job类。每次scheduler执行job,它会在调用它的execute(..)方法之前创建这个类的新实例。当执行完成，job实例的引用被删除,然后垃圾收集器回收实例。</p>
 <p>这种行为的后果之一是job必须有一个无参数的构造函数(当使用默认JobFactory实现)。另一个是job类上定义的没有意义的数据字段的状态,它们的值在Job执行期间不会被保存。</p>
 <p>你能够使用JobDataMap为job实例提供属性/配置或跟踪job执行间的状态,,它是JobDetail对象的一部分。</p>
-##### JobDataMap
+JobDataMap
 <p>JobDataMap可以用来保存大量那些在job实例执行时你希望得到的 (序列化)数据对象。JobDataMap是Java Map接口的一个实现,并且添加一些便利的方法来存储和检索数据的原始类型。</p>
 <p>当定义/构建JobDetail，这里有一些将job添加进scheduler之前放到JobDataMap的数据。</p>
 ```java
@@ -246,28 +246,28 @@ public class DumbJob implements Job {
 }
 ```
 <p>你会注意到整个代码的类是长,但是execute()方法中的代码更干净。当然你也可以说,虽然代码比较长,它实际上花了更少的编码,如果程序员用IDE自动生成setter方法,而不必手工从JobDataMap检索值。这是你的选择。</p>
-##### Job实例
+Job实例
 <p>你可以创建一个单一的工作类,在scheduler中存储被JobDetails创建的多个实例定义——每个都有自己的一组属性和JobDataMap——并将它们添加到调度器。</p>
 <p>例如,您可以创建一个类称为SalesReportJob,实现了job接口。这个job也许被编码成预计的参数(通过JobDataMap)发送给指定的基于销售报告的销售人员。然后,他们可能会创建多个Job定义(JobDetails),比如SalesReportForJoe和SalesReportForMike中指定相应的JobDataMaps作为“Joe”和“Mike”各自的输入工作。</p>
 <p>当trigger触发,JobDetail(实例定义)被关联加载,Job类通过scheduler中的配置JobFactory实例化。默认JobFactory简单地调用Job类的newInstance(),然后试图调用类中与JobDataMap键的名称相匹配setter方法。您可能想要创建自己的JobFactory实现，诸如应用程序的IoC或DI容器生产/实例化job类。</p>
 <p>每个存储的JobDetail作为job定义或JobDetail实例被引用,每个执行的job都是一个job实例或job定义的实例。一般来说,使用术语“工作”时,指的是定义的名称或JobDetail。类实现的工作接口,称为“job类”。</p>
-##### Job状态和并发
+Job状态和并发
 <p>下面是job状态数据和并发的一些注意点。你可以添加一些注解在你的job类上，在一些方面影响Quartz的行为。</p>
 <p>@DisallowConcurrentExecution注释,可以添加到job类上，通知Quartz不要同时执行给定的job定义（引用给定的job类）的多个实例。在上一个例子中，如果SalesReportJob用了这个注解，在给定时间将只能执行SalesReportJob的一个实例，但是它可以同时执行“SalesReportForMike”的一个实例。约束是基于实例的定义（JobDetail），而不是job类的实例。然而，它决定了注解参与到类本身中（在Quartz设计时），因为它对类如何编码产生影响。</p>
 <p>@PersistJobDataAfterExecution注释可以添加到job类，通知Quartz在execute()方法成功执行后更新JobDetail的JobDataMap的拷贝，这样相同的job下一次执行时接收到更新的值，而不是原来存储的值。和@DisallowConcurrentExecution注解一样，应用到job定义的实例上，而不是job类的实例，虽然它给job类带来了属性，因为它对类如何编码产生影响。（例如，“有状态性”需要明确理解执行方法的代码）。</p>
 <p>如果你使用@PersistJobDataAfterExecution注解,您还应该考虑使用@DisallowConcurrentExecution注解,以避免可能的混乱(竞争条件)的数据被存储在相同的工作的两个实例(JobDetail)并发执行。</p>
-##### Job的其他属性
+Job的其他属性
 <p>这里有你可以通过JobDetail对象定义job实例的另一些属性的快速总结：</p>
 <p>持久性——如果一个job不是持久的, 一旦不再有任何活动的与之关联的trigger它将自动从scheduler删除。换句话说,不持久的job的生命周期依赖于它的trigger的存在。<p>
 <p>RequestsRecovery——如果一份工作“请求恢复”,在scheduler强制关闭期间执行(即进程是运行崩溃,或机器关闭)，在scheduler再次启动时会重新执行。在这种情况下,JobExecutionContext.isRecovering()方法将返回true。<p>
-##### JobExecutionException
+JobExecutionException
 <p>最后,我们需要告诉你Job.execute(..)一些细节。唯一类型的异常(包括RuntimException),你可以从执行方法抛出JobExecutionException。因此,你通常应该使用“rycatch”块包裹执行方法。你也应该花些时间看着JobExecutionException的文档,因为你的job可以使用它提供scheduler作为你想如何处理异常的各种指令。</p>
  
 <h2 id="3">使用trigger</h2>
 <h4 id="3.1">Trigger</h4>
 <p>和job一样,trigger容易处理,但是他们有不同的定制项,在你充分使用Quartz之前需要了解它们。</p>
 <p>不同类型的trigger用来满足不同的调度需求。常用的有两种，SimpleTrigger和CronTrigger。关于这些特定触发器的细节在第10页“使用trigger”。</p>
-##### 通用的trigger属性
+通用的trigger属性
 <p>除了所有的触发器都有TriggerKey属性作为追踪它们的标识符外，它们还有很多通用的其它属性。当你创建trigger定义时你可以使用TriggerBuilder设置这些通用的属性（如下示例）。</p>
 <p>这是通用的触发器类型：<p>
 
@@ -276,16 +276,16 @@ public class DumbJob implements Job {
 - endTime属性表示trigger的计划不再有效。换句话说，一个“每月5号”的trigger，endTime为7月1号，它上次执行的时间就是6月5号。
 
 <p>其它属性，还有更多的解析，将在下面讨论。</p>
-##### 优先级
+优先级
 <p>有时，当你有很多触发器（或者你得Quartz线程池有很多工作线程），Quartz也许没有足够的资源在同一时间触发所有的trigger。这种情况下，你也许想控制你的哪些触发器可以优先获得Quartz的工作线程。为此，你需要设置trigger的优先级属性。如果N个触发器同一时间触发，但是当前仅有Z和可用的工作线程，前Z个具有高优先级的触发器将首先执行。</p>
 <p>任何整数，正数或者负数都允许作为优先级。如果你的trigger没有设定优先级它将使用默认的优先级为5。</p>
 <p>注意：优先级仅仅在同一时间触发的trigger中才有效。一个在10:59触发的trigger将永远比在11:00触发的trigger先执行。</p>
 <p>注意：当触发器被监测到需要恢复时，它的优先级将与原始的优先级相同。</p>
-##### 触发失败说明
+触发失败说明
 <p>Trigger另一个重要的属性就是“过时触发指令”。如果因为当前scheduler被关闭或者Quartz的线程池没有可用的线程用来执行job导致当前的触发器错过了触发时间，就是出现错误。</p>
 <p>不同类型的trigger有不同的失败处理方式。默认情况下，它们使用“智能策略”，其拥有基于trigger类型和配置的动态行为。Scheduler启动时，它将搜索所有失败的持久化的trigger，然后基于它们的失败配置来更新它们。</p>
 <p>当你在你的项目中使用Quartz，一定要熟悉它们javaDoc中给定trigger的失败处理策略。更多关于特殊trigger类型的失败策略在第10页“使用trigger”也有提供。</p>
-##### 日历
+日历
 <p>Quartz日历对象（不是java.util.Calendar对象）能够与在scheduler中定义和存储的trigger时间相关联。</p>
 <p>日历可用于从trigger的触发计划中排除时间块。例如，你可以创建一个trigger在工作日的9:30触发，但是排除法定假日。</p>
 <p>日历可以使任何实现了Calendar接口的序列化对象（如下所示）：</p>
@@ -331,7 +331,7 @@ import static org.quartz.TriggerBuilder.*;
 import static org.quartz.SimpleScheduleBuilder.*;
 import static org.quartz.DateBuilder.*:
 ```
-##### 使用不同的Scheduler定义trigger的例子
+使用不同的Scheduler定义trigger的例子
 <p>下面是使用简单的scheduler定义触发器的一些例子。仔细观察，它们每个至少展示了一个新的/不同的点。</p>
 <p>同时，花费一些时间查看TriggerBuilder和SimpleSchedulerBuilder定义的所有可用方法以便熟悉这里的示例没展示但是你可能会使用到的选项。</p>
 <p>注意：注意如果你不显示的设置属性TriggerBuilder（和其它的quartz创建者）会选取一个合理的值。例如，如果你不调用withIdentity(..)的某个方法，TriggerBuilder将为你的trigger生成一个随机的名字，同样，如果你没有调用startAt(..)，则设定为当前的时间（立即执行）。</p>
@@ -376,7 +376,7 @@ import static org.quartz.DateBuilder.*:
 				.build();
 		scheduler.scheduleJob(trigger, job);
 ```
-##### SimpleTrigger失败说明
+SimpleTrigger失败说明
 <p>SimpleTrigger有几个指令，用来通知quartz当触发失败该怎么做。（关于trigger触发失败的信息，参见trigger章节）这些指令被SimpleTrigger自己定义（它们的行为在Javadoc中有描述）。这些常量包括：</p>
 
 - MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY
@@ -401,7 +401,7 @@ import static org.quartz.DateBuilder.*:
 <p>如果你需要基于类似日历的观念反复触发一个job，而不是使用SimpleTrigger指定一个固定的时间间隔，相对于SimpleTrigger，CronTrigger往往更有用。</p>
 <p>使用CronTrigger，你可以指定一个触发计划例如“每周五的中午”，或者“每个工作日上午9:00”，甚至“1月的周一，周三和周五早上9:00至10:00每五分钟”。</p>
 <p>即便如此，和SimpleTrigger一样， CronTrigger也有一个startTime指定计划的生效时间也有一个（可选的）endTime指定计划的停止时间。</p>
-##### Cron表达式
+Cron表达式
 <p>Cron表达式用于CronTrigger实例的配置。Cron表达式实际上是由7个子表达式组成，用来描述计划安排的细节。这些子表达式使用空格分割：</p>
 
 - 秒
@@ -421,7 +421,7 @@ import static org.quartz.DateBuilder.*:
 <p>“L”允许在每月的第几天和每周的第几天上设置。这个符号是“last”的简写，但是它在这两个字段上的意思是不同的。例如，“L”在每月的第几天字段上指的是“每月的最后一天”——1月31号，和非闰年的2月28号。如果用在每周的第几天，就是“7”或者“SAT”的意思。但是如果用在每周第几天的一个值后面，就意味着“每月最后一个星期的第几天”——例如“6L”或者“FRIL”都表示“每月最后一个周五”。你还可以为每月的最后一天指定一个偏移量，例如“L-3”意味着每月倒数第三天。当使用“L”选项时，重要的是不要指定列表或范围值，不然你将得到混乱/不期望的结果。</p>
 <p>“W”用于指定距离给定日期最近的一个工作日（周一至周五）。例如，如果你在每月的第几天字段上指定“15W”，意味着：“离本月15号最近的工作日”。</p>
 <p>“#”用于指定每月中的“第几个”周几。例如，在每周的第几天设置“6#3”或者“FRI#3”表示“本月第三个周五”。</p>
-##### 格式
+格式
 字段如下：
 <table>
 	<thead>
@@ -456,7 +456,7 @@ import static org.quartz.DateBuilder.*:
 
 <p>最简单的cron表达式可以写成：* * * * ? *</p>
 <p>或者比较复杂的：0/5 14,18,3-39,52 * ? JAN,MAR,SEP MON-FRI 2002-2010</p>
-##### 特殊字符
+特殊字符
 
 - *（所有值）——用来选择一个字段上的所有值。例如：分钟字段上的“*”表示“每分钟”。
 - ?（无特定值）——当你需要在允许的两个字段中的一个指定一些值的时候使用。例如，你想让你得trigger在每月的某一天触发（假如，10号），但是不关系在周几发生，你应该在每月的第几天字段上设置“10”，在每周的第几天字段上设置“?”。具体参见下面实例。
@@ -469,7 +469,7 @@ import static org.quartz.DateBuilder.*:
 - \#——用于指定每月中的第几个周几。例如，每周第几天字段上的“6#3”表示“每月的第3个周五”（”6“=周五，”#3“=每月的第3个）。另一个例子：”2#1“=每月的第1个周一，”4#5“每月的第5个周三。注意，如果你指定”#5”，但是该月没有第5个这一周的天数，触发器将不会执行。
 
 <p>注意：月份的英文名和周几的英文是不区分大小写的。MON与mon都是合法的字符。</p>
-##### 示例
+示例
 <p>这里有一些完整的示例：</p>
 <table>
 	<thead>
@@ -544,7 +544,7 @@ import static org.quartz.DateBuilder.*:
 - 支持不需要完全指定一周中的第几天和一月中的第几天（你必须在这两个字段之一使用”?”号）。
 - 当设置触发时间在凌晨时注意那些实行夏令时的地区（在美国，时间通常会提前或推后到凌晨2点——因为依赖于时间向前或向后改变会跳过或重复执行触发器。你可以从维基百科查看你的使用环境：https://secure.wikimedia.org/wikipedia/en/wiki/Daylight_saving_time_around_the_world）
 
-##### 创建CronTrigger
+创建CronTrigger
 <p>使用TriggerBuilder（创建trigger的主属性）和CronScheduleBuilder（创建CronTrigger特殊属性）创建CronTrigger实例。用DSL-style使用这些构造类，使用静态导入：</p>
 ```java
 import static org.quartz.TriggerBuilder.*;
@@ -592,7 +592,7 @@ import static org.quartz.DateBuilder.*:
 				.forJob(myJobKey)
 			.build();
 ```
-##### CronTrigger失败说明
+CronTrigger失败说明
 <p>下面的说明可以在CronTrigger失败时用来介绍Quartz信息。（更多关于trigger失败的情况介绍在教程中）。这些介绍是CronTrigger自己定义的常量（包括Javadoc描述的行为）。包括：</p>
 
 - MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY
@@ -806,7 +806,7 @@ org.quartz.jobStore.tcConfigUrl = localhost:9510
 <h4 id="7.2">Scheduler工厂</h4>
 <p>StdSchedulerFactory是org.quartz.SchedulerFactory接口的一个实现。它使用一组属性（java.util.Properties）来创建Quartz Scheduler实例。这些属性通常从一个文件存储和加载，也可以由你的程序直接传给工厂。简单的调用工厂的getScheduler()将产生一个Scheduler，对其初始化（ThreadPool, JobStore和数据源）并返回它的公共接口的句柄。</p>
 <p>有一些简单的配置示例（包括属性说明）在Quartz发布包的“docs/config”目录下。你可以在Quartz的示例程序和示例代码中找到完整的文档。</p>
-##### DirectSchedulerFactory
+DirectSchedulerFactory
 <p>DirectSchedulerFactory是另一个SchedulerFactory实现。如果你想用更程序化的方法创建你自己的Scheduler实例，它会有帮助。基于下面两个原因一般不鼓励使用它：（1）它需要深入理解Scheduler（2）它不允许使用配置（意味着你必须硬编码Scheduler的配置）。</p>
 <h4 id="7.3">日志</h4>
 <p>Quartz使用SLF4J框架满足日志需求。为了“优化”框架设置（例如输出数量，输出的地方），你需要理解SLF4J框架，这超出了本文范围。</p>
@@ -831,7 +831,7 @@ org.quartz.jobStore.tcConfigUrl = localhost:9510
 <p>重点：不要在单独的机器上运行集群，除非它们非常定期的使用某种时间同步服务或守护进程同步它们的时钟（每个时钟相差在一秒内）。如果你不清楚怎么做，参见http://www.boulder.nist.gov/timefreq/service/its.htm。</p>
 <p>重点：不要在非集群实例上将多个运行的实例设置为相同的表设置。你可能得到损坏的数据，并得到不可预测的行为。</p>
 <p>每次执行只有一个节点触发job。例如，如果job重复触发通知它每10秒触发一次，12:00:00有个节点会运行job，12:00:10也会有一个节点将运行job。每次运行的节点不一定相同——会或多或少的随机选择运行的节点。负载均衡机制就是为繁忙的scheduler（很多trigger）接近随机调度，仅仅在scheduler不繁忙的时候（一两个trigger）容易使用同一个节点。</p>
-##### TerracottaJobStore集群
+TerracottaJobStore集群
 <p>使用TerracottaJobStore简单的配置scheduler的描述在第25页“TerracottaJobStore”中，你得scheduler将被设置为集群。</p>
 <p>你也要考虑你设置Terracotta server的影响，特别是那些功能选项，例如持久化，为HA运行的Terracotta server阵列。</p>
 <p>TerracottaJobStore授权版提供了Quartz的高级特性，允许智能的为job目标提供合适的节点。</p>
