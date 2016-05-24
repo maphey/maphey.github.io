@@ -258,8 +258,8 @@ Job状态和并发
 <p>如果你使用@PersistJobDataAfterExecution注解,您还应该考虑使用@DisallowConcurrentExecution注解,以避免可能的混乱(竞争条件)的数据被存储在相同的工作的两个实例(JobDetail)并发执行。</p>
 Job的其他属性
 <p>这里有你可以通过JobDetail对象定义job实例的另一些属性的快速总结：</p>
-<p>持久性——如果一个job不是持久的, 一旦不再有任何活动的与之关联的trigger它将自动从scheduler删除。换句话说,不持久的job的生命周期依赖于它的trigger的存在。<p>
-<p>RequestsRecovery——如果一份工作“请求恢复”,在scheduler强制关闭期间执行(即进程是运行崩溃,或机器关闭)，在scheduler再次启动时会重新执行。在这种情况下,JobExecutionContext.isRecovering()方法将返回true。<p>
+<p>持久性——如果一个job不是持久的, 一旦不再有任何活动的与之关联的trigger它将自动从scheduler删除。换句话说,不持久的job的生命周期依赖于它的trigger的存在。</p>
+<p>RequestsRecovery——如果一份工作“请求恢复”,在scheduler强制关闭期间执行(即进程是运行崩溃,或机器关闭)，在scheduler再次启动时会重新执行。在这种情况下,JobExecutionContext.isRecovering()方法将返回true。</p>
 JobExecutionException
 <p>最后,我们需要告诉你Job.execute(..)一些细节。唯一类型的异常(包括RuntimException),你可以从执行方法抛出JobExecutionException。因此,你通常应该使用“rycatch”块包裹执行方法。你也应该花些时间看着JobExecutionException的文档,因为你的job可以使用它提供scheduler作为你想如何处理异常的各种指令。</p>
  
@@ -269,7 +269,7 @@ JobExecutionException
 <p>不同类型的trigger用来满足不同的调度需求。常用的有两种，SimpleTrigger和CronTrigger。关于这些特定触发器的细节在第10页“使用trigger”。</p>
 通用的trigger属性
 <p>除了所有的触发器都有TriggerKey属性作为追踪它们的标识符外，它们还有很多通用的其它属性。当你创建trigger定义时你可以使用TriggerBuilder设置这些通用的属性（如下示例）。</p>
-<p>这是通用的触发器类型：<p>
+<p>这是通用的触发器类型：</p>
 
 - 属性jobKey是trigger触发将要执行的job的标识。
 - startTime是trigger的计划第一次生效的标识。值是一个java.util.Date对象，定义了一个给定的日期时间。对于许多类型的trigger来说，trigger应该在开始时间准确的启动。对于其它类型来说标志着scheduler开始被追踪。这意味着你可以这样存储一个scheduler的trigger，例如一月“每月的第5天执行”，如果startTime属性设置为4月1日，在首次触发前，还要过几个月。
