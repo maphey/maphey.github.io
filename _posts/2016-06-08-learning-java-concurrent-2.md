@@ -75,19 +75,19 @@ public class Main {
 }
 ```
 <p>运行结果如下：</p>
->thread 903: send fact:[3, 7, 43]; total times:4
->thread 914: send fact:[2, 457]; total times:6
->thread 910: send fact:[2, 5, 7, 13]; total times:4
->thread 906: send fact:[2, 3, 151]; total times:7
->thread 912: send fact:[2, 2, 2, 2, 3, 19]; total times:4
->...
->thread 988: send fact:[2, 2, 13, 19]; total times:95
->thread 997: send fact:[997, 1]; total times:95
->thread 972: send fact:[2, 2, 3, 3, 3, 3, 3]; total times:96
->thread 984: send fact:[2, 2, 2, 3, 41]; total times:97
->thread 996: send fact:[2, 2, 3, 83]; total times:98
->thread 992: send fact:[2, 2, 2, 2, 2, 31]; total times:99
->total times: 99
+>thread 903: send fact:[3, 7, 43]; total times:4  
+>thread 914: send fact:[2, 457]; total times:6  
+>thread 910: send fact:[2, 5, 7, 13]; total times:4  
+>thread 906: send fact:[2, 3, 151]; total times:7  
+>thread 912: send fact:[2, 2, 2, 2, 3, 19]; total times:4  
+>...  
+>thread 988: send fact:[2, 2, 13, 19]; total times:95  
+>thread 997: send fact:[997, 1]; total times:95  
+>thread 972: send fact:[2, 2, 3, 3, 3, 3, 3]; total times:96  
+>thread 984: send fact:[2, 2, 2, 3, 41]; total times:97  
+>thread 996: send fact:[2, 2, 3, 83]; total times:98  
+>thread 992: send fact:[2, 2, 2, 2, 2, 31]; total times:99  
+>total times: 99  
 
 <p>最终结果是99（应该是100），结果并不正确。</p>
 <p>有时我们想使用“先检查，再使用”的延迟初始化，在使用时才初始化对象，同时保证对象指挥被初始化一次，我们可能会使用下面这样的处理方式：</p>
@@ -128,16 +128,16 @@ public class Main {
 }
 ```
 <p>运行结果如下：</p>
->thread 9:java.lang.Object@48258d58
->thread 6:java.lang.Object@584aceca
->thread 5:java.lang.Object@48258d58
->thread 8:java.lang.Object@584aceca
->thread 2:java.lang.Object@584aceca
->thread 3:java.lang.Object@48258d58
->thread 7:java.lang.Object@48258d58
->thread 1:java.lang.Object@48258d58
->thread 0:java.lang.Object@48258d58
->thread 4:java.lang.Object@48258d58
+>thread 9:java.lang.Object@48258d58  
+>thread 6:java.lang.Object@584aceca  
+>thread 5:java.lang.Object@48258d58  
+>thread 8:java.lang.Object@584aceca  
+>thread 2:java.lang.Object@584aceca  
+>thread 3:java.lang.Object@48258d58  
+>thread 7:java.lang.Object@48258d58  
+>thread 1:java.lang.Object@48258d58  
+>thread 0:java.lang.Object@48258d58  
+>thread 4:java.lang.Object@48258d58  
 
 ### 使用并发数据结构的共享状态域
 <p>对于共享状态域，JDK1.5中提供了许多可供使用的并发数据类型，可以保证共享状态在多线程程序中线程安全型。</p>
