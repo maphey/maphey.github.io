@@ -6,7 +6,7 @@ thread: 3
 categories: java
 tags: java并发编程
 ---
-## 了解并发编程
+### 了解并发编程
 <p>随着CPU处理能力和核心数的增长，为了尽力榨取CPU的性能，提高计算机的资源利用率。现代计算机操作系统都实现了多个程序并行执行的能力。并发编程有两种实现方式：多进程和多线程。多进程和多线程实现并发各有优劣（如下表），多线程在执行效率上具有明显的优势。在大多数现代操作系统中，都是以线程为基本的调度单位，而不是进程。因此，我们通常利用多线程的方式编写java并发程序。</p>
 <table>
 	<thead>
@@ -63,7 +63,7 @@ tags: java并发编程
 
 <p>其中最简单的就是“不在线程之间共享状态变量”。因为不涉及到共享对象，所以不需要额外的操作来同步共享对象的状态。本节我们就探讨一下“无共享状态变量的并发”。</p>
 
-## 了解java中的多线程
+### 了解java中的多线程
 <p>在java中创建线程有两种方式：一种是继承Thread类，覆写run方法；另一种是实现Runnable接口，实现run方法，并将实现类传给Thread实例执行。两种方式的效果是一样的，只不过实现Runnable接口时可以另外再继承一个类，可用于某些需要复用基类的情况。</p>
 <p>我们来看看使用Runnable实现多线程的一个例子。</p>
 <p>Calculator.java，执行的线程：</p>
@@ -139,43 +139,87 @@ public class Main {
 - Priority：保存或设置线程的优先级。线程的优先级从1到10，其中1优先级最低，10最高。优先级会映射到操作系统的线程优先级，比如Windows一共有7个线程优先级。设置了优先级并不一定完全保证高优先级的线程一定会先执行，只是一个推荐作用，使高优先级的线程有更大的概率优先执行
 - Status：保存线程的状态。java线程一个有6种状态：new、runnable、blocked、waiting、time waiting和terminated。
 
-## 不共享状态变量的线程
-<p>在java的线程中创建的变量被封装在线程内部，不需要也无法共享状态。这样的多线成程序无需同步共享状态变量。我们来看一个例子。</p>
-<p>Calculator.java，实现了Runnable接口，并在类内部创建了一个List对象。这个List对象不是共享状态变量，无需同步就能保证线程安全：</p>
+### 无共享状态域的线程
+<p>在java的线程中创建的变量被封装在线程内部，线程间不需要共享状态。这样的多线成程序无需同步共享状态域。因为这类多线程程序不涉及共享状态的可见性问题，所以本身就是线程安全的。我们来看一个例子。</p>
+<p>我们有一个计算一个数字的因数的多线程程序StatelessFactorizer.java。计算因数的对象没有共享状态变量，无需同步就能保证线程安全：</p>
 ```java
-class Calculator implements Runnable {
-	private int number;
+import java.util.ArrayList;
+import java.util.List;
 
-	public Calculator(int number) {
-		this.number = number;
+// 没有共享状态域，所以是线程安全的
+public class StatelessFactorizer {
+	public void service(Integer num) {
+		List<Integer> factors = factor(num);
+		send(factors);
+	}
+
+	private List<Integer> factor(int n) {
+		List<Integer> res = new ArrayList<Integer>();
+		int m = n;
+		for (int i = 2; i <= n; i++) {
+			if (fun(i) && m % i == 0) {
+				res.add(i);
+				m = m / i;
+				i = 1;
+				if (fun(m)) {
+					break;
+				}
+			}
+		}
+		res.add(m);
+		return res;
+	}
+
+	private boolean fun(int n) {
+		for (int i = 2; i <= Math.sqrt(n); i++)
+			if (n % i == 0)
+				return false;
+		return true;
+	}
+
+	private void send(List<Integer> factors) {
+		System.out.println(Thread.currentThread().getName() + ": send fact:" + factors);
+	}
+}
+```
+<p>我们实现一个Runnable类，用来运行查找因数的实例。</p>
+```java
+public class Task implements Runnable {
+	private StatelessFactorizer statelessFactorizer;
+	private int num;
+
+	public Task(StatelessFactorizer statelessFactorizer, int num) {
+		this.statelessFactorizer = statelessFactorizer;
+		this.num = num;
 	}
 
 	@Override
 	public void run() {
-		List<Integer> privateList = new ArrayList<Integer>();
-		for (int i = 0; i < number; i++) {
-			privateList.add(i);
+		try {
+			Thread.sleep((int) Math.random() * 1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		for (int i = 0; i < 10; i++) {
-			System.out.println(Thread.currentThread().getName() + ": create private variable :" + privateList);
-		}
+		statelessFactorizer.service(num);
 	}
 }
 ```
-<p>Main.java，创建多线程程序：</p>
+<p>Main.java，创建多线程程序，查找900至1000的质因数：</p>
 ```java
 public class Main {
 	public static void main(String[] args) {
-		for (int i = 0; i < 10; i++) {
-			Calculator calculator = new Calculator(i);
-			Thread thread = new Thread(calculator);
+		StatelessFactorizer statelessFactorizer = new StatelessFactorizer();
+		for (int i = 900; i < 1000; i++) {
+			Task task = new Task(statelessFactorizer, i);
+			Thread thread = new Thread(task, "thread " + i);
 			thread.start();
 		}
 	}
 }
 ```
+<p>可以由此得出结论：<strong>无共享对象一定是线程安全的。</strong></p>
 
-## 使用ThreadLocal避免共享状态变量
+### 使用ThreadLocal避免共享状态变量
 <p>ThreadLocal提供了另一种更规范方式避免了共享状态变量。ThreadLocal为每一个线程保存一份共享变量的副本，内部使用一个Map来维护共享变量，Map中元素的key就是线程对象，value为对应线程的变量副本。如此，每个线程都有自己的变量副本，也就没必要对共享变量进行同步了，从而隔离了多个线程对数据的访问冲突。我们来看一个例子。</p>
 <p>UnsafeTask.java，创建一个Runnable实例，我们先看看如果不使用ThreadLocal，会怎么样：</p>
 ```java
