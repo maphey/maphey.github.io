@@ -20,7 +20,7 @@ public static <T> void deleteLast(Vector<T> list) {
 	list.remove(lastIndex);
 }
 ```
-<p>如果有两个个线程同时调用getLast和deleteLast，可能会出错，因为这两个复合操作没有同步成原子操作。为了将这两个复合操作同步成原子操作，我们需要获取容器的锁，确保Vector在获取size和修改size之间不会发生变化。</p>
+<p>如果有两个线程同时调用getLast和deleteLast，可能会出错，因为这两个复合操作没有同步成原子操作。为了将这两个复合操作同步成原子操作，我们需要获取容器的锁，确保Vector在获取size和修改size之间不会发生变化。</p>
 ```java
 public static <T> T getLast(Vector<T> list) {
 	synchronized (list) {
