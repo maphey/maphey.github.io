@@ -67,6 +67,7 @@ $$ Speedup \leq \frac{1}{F + \frac{(1 - F)}{N}} $$
 减小竞争发生的有效方式是尽可能缩短占有锁的时间。这可以通过把与锁无关的代码移出synchronized块来实现，尤其是那些花费“昂贵”的操作，以及那些潜在的阻塞操作，比如I/O操作。
 
 持有锁超过必要范围的例子：
+
 ```java
 import java.util.HashMap;
 import java.util.Map;
@@ -87,6 +88,7 @@ public class AttributeStore {
 }
 ```
 这里整个userLocationMatches方法都是synchronized的，实际上只有attributes.get(key)这一部分是真正需要调用锁的。
+
 ```java
 import java.util.HashMap;
 import java.util.Map;
@@ -115,6 +117,7 @@ public class BetterAttributeStore {
 
 如果一个锁守护数量大于1、且相互独立的状态变量，你可以通过分拆锁，是每一个锁守护不同的变量，从而改进可伸缩性。
 下面是一个使用默认的内置锁同步状态的例子：
+
 ```java
 import java.util.Set;
 
@@ -145,6 +148,7 @@ public class ServerStatus {
 }
 ```
 默认的内置锁同步了两个独立变量的状态，我们可以分拆内置锁为两个独立的锁，分拆之后，每一个新的更精巧的锁，相比于那些原始的粗糙锁，将会看到更少的通信量。
+
 ```java
 import java.util.Set;
 
@@ -188,6 +192,7 @@ public class ServerStatus {
 分离锁的一个负面作用是：对容器加锁，进行独占访问更加困难，并且更加昂贵了。
 
 下面是一个分离锁的例子：
+
 ```java
 public class StripedMap {
 	private static final int N_LOCKS = 16;
