@@ -64,3 +64,181 @@ $$ Speedup \leq \frac{1}{F + \frac{(1 - F)}{N}} $$
 
 
 ### 减少上下文切换的开销
+减小竞争发生的有效方式是尽可能缩短占有锁的时间。这可以通过把与锁无关的代码移出synchronized块来实现，尤其是那些花费“昂贵”的操作，以及那些潜在的阻塞操作，比如I/O操作。
+
+持有锁超过必要范围的例子：
+```java
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+public class AttributeStore {
+	private final Map<String, String> attributes = new HashMap<String, String>();
+
+	public synchronized boolean userLocationMatches(String name, String regexp) {
+		String key = "users." + name + ".location";
+		String location = attributes.get(key);
+		if (location == null) {
+			return false;
+		} else {
+			return Pattern.matches(regexp, location);
+		}
+	}
+}
+```
+这里整个userLocationMatches方法都是synchronized的，实际上只有attributes.get(key)这一部分是真正需要调用锁的。
+```java
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+public class BetterAttributeStore {
+	private final Map<String, String> attributes = new HashMap<String, String>();
+
+	public boolean userLocationMatches(String name, String regexp) {
+		String key = "users." + name + ".location";
+		String location;
+		synchronized (this) {
+			location = attributes.get(key);
+		}
+		if (location == null) {
+			return false;
+		} else {
+			return Pattern.matches(regexp, location);
+		}
+	}
+}
+```
+上面的代码我们缩小了锁守护的范围，减少了调用中遇到锁住情况的次数。串行化的代码少了，消除了可伸缩性的一个障碍。实际上如果我们把attributes换成线程安全的容器，能够省去显示的同步，减少Map访问中锁的范围，并减小了未来的维护者因为忘了在访问attributes前获得相应锁而造成的风险。
+
+减小持有锁的时间比例的另一种方式是让线程减少调用它的频率。这可以通过分拆锁和分离锁来实现，也就是采用相互独立的锁，守卫多个独立的状态变量，在改变之前，它们都是由一个锁守护的。这些技术减小了锁发生的时的粒度，潜在实现了更好的可伸缩性——但是使用更多的锁同样会增加死锁的风险。
+
+如果一个锁守护数量大于1、且相互独立的状态变量，你可以通过分拆锁，是每一个锁守护不同的变量，从而改进可伸缩性。
+下面是一个使用默认的内置锁同步状态的例子：
+```java
+import java.util.Set;
+
+public class ServerStatus {
+	private final Set<String> users;
+	private final Set<String> queries;
+
+	public ServerStatus(Set<String> users, Set<String> queries) {
+		this.users = users;
+		this.queries = queries;
+	}
+
+	public synchronized void addUser(String u) {
+		users.add(u);
+	}
+
+	public synchronized void addQuery(String q) {
+		queries.add(q);
+	}
+
+	public synchronized void removeUser(String u) {
+		users.remove(u);
+	}
+
+	public synchronized void removeQuery(String q) {
+		queries.remove(q);
+	}
+}
+```
+默认的内置锁同步了两个独立变量的状态，我们可以分拆内置锁为两个独立的锁，分拆之后，每一个新的更精巧的锁，相比于那些原始的粗糙锁，将会看到更少的通信量。
+```java
+import java.util.Set;
+
+public class ServerStatus {
+	private final Set<String> users;
+	private final Set<String> queries;
+
+	public ServerStatus(Set<String> users, Set<String> queries) {
+		this.users = users;
+		this.queries = queries;
+	}
+
+	public void addUser(String u) {
+		synchronized (users) {
+			users.add(u);
+		}
+	}
+
+	public void addQuery(String q) {
+		synchronized (queries) {
+			queries.add(q);
+		}
+	}
+
+	public void removeUser(String u) {
+		synchronized (users) {
+			users.remove(u);
+		}
+	}
+
+	public void removeQuery(String q) {
+		synchronized (queries) {
+			queries.remove(q);
+		}
+	}
+}
+```
+
+分拆锁有时候可以被扩展，分成可大可小加锁块的集合，并且它们归属于相互独立的对象，这样的情况就是分离锁。例如，ConcurrentHashMap的实现使用了一个包含16个锁的Array，每个锁守护HashBucket的1/16；Bucket N有第N mod 16个锁来守护。
+
+分离锁的一个负面作用是：对容器加锁，进行独占访问更加困难，并且更加昂贵了。
+
+下面是一个分离锁的例子：
+```java
+public class StripedMap {
+	private static final int N_LOCKS = 16;
+	private final Node[] buckets;
+	private final Object[] locks;
+
+	private static class Node {
+		...
+	}
+
+	public StripedMap(int numBuckets) {
+		buckets = new Node[numBuckets];
+		locks = new Object[N_LOCKS];
+		for (int i = 0; i < N_LOCKS; i++) {
+			locks[i] = new Object();
+		}
+	}
+
+	private final int hash(Object key) {
+		return Math.abs(key.hashCode() % buckets.length);
+	}
+
+	public Object get(Object key) {
+		int hash = hash(key);
+		synchronized (locks[hash % N_LOCKS]) {
+			for (Node m = buckets[hash]; m != null; m = m.next()) {
+				if (m.key.equals(key)) {
+					return m.value;
+				}
+			}
+		}
+	}
+
+	public void clear() {
+		for (int i = 0; i < buckets.length; i++) {
+			synchronized (locks[i % N_LOCKS]) {
+				buckets[i] = null;
+			}
+		}
+	}
+	
+	...
+}
+```
+能够从分拆锁受益的程序，通常是那些锁的竞争普遍大于对锁守护数据竞争的程序。
+
+要避免热点域。热点域（比如共享的缓存）会导致锁的粒度很难被降低。限制了可伸缩性。
+
+用于减轻竞争锁带来的影响的第三种技术是提前使用独占锁，这有助于使用更友好的并发方式进行共享状态的管理。这包括使用并发容器、读-写锁、不可变对象，以及原子变量。
+
+对象池化技术会给垃圾回收造成很大的麻烦。在并发的应用程序中，池化表现得更糟糕。当线程分配新的对象时，需要线程内部非常细微的协调，因为分配运算通常使用线程本地的分配块来消除对象堆中的大部分同步。但是，如果这些线程从池中请求对象，那么协调访问池的数据结构的同步就成为必然了，这边产生了线程阻塞的可能性。锁竞争产生的阻塞的代价比直接分配的代价多几百倍，即使很小的池竞争都会造成可伸缩性的瓶颈。
+
+### 减少上下文的开销
+在日志系统中，如果将I/O移入多线程程序中，会导致I/O资源竞争。只需要将日志I/O移入一个线程，既消除了输出流的竞争，又减少了竞争源，改进了整体的吞吐量。因为需要调度资源更少了，上下文切换更少了，锁的管理也更简单了。
