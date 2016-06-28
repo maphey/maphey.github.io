@@ -7,7 +7,7 @@ categories: java
 tags: java并发编程
 ---
 ### 线程的中断
-在java API和语言规范中，并没有把中断与任何取消的语意绑定起来，但是，实际上，使用中断来处理取消之外的任何事情都是不明智的，并且很难支持起更大的应用。
+在Java API和语言规范中，并没有把中断与任何取消的语意绑定起来，但是，实际上，使用中断来处理取消之外的任何事情都是不明智的，并且很难支持起更大的应用。
 
 静态的interrupted方法名并不理想，它仅仅能够清除当前线程的中断状态，并返回它之前的值：这是清除中断状态唯一的方法。
 
@@ -20,6 +20,7 @@ tags: java并发编程
 下面是通过中断进行取消的例子：
 
 PrimeGenerator.java定义了一个可以取消的任务：
+
 ```java
 public class PrimeGenerator extends Thread {
 
@@ -51,7 +52,9 @@ public class PrimeGenerator extends Thread {
 	}
 }
 ```
+
 Main.java调用interrupted触发取消：
+
 ```java
 public class Main {
 	public static void main(String[] args) throws InterruptedException {
@@ -62,6 +65,7 @@ public class Main {
 	}
 }
 ```
+
 上面的例子中，Main调用了interrupt方法，会设置并保存task线程的取消状态。
 
 中断异常通常是实现取消最明智的选择。正如需要为任务制定取消策略一样，也应该制定线程中断策略。一个中断策略决定线程如何应对中断请求——当发现中断请求时，它会做什么，哪些工作单元对于中断来说是原子操作，以及在多快的时间里响应中断。
@@ -85,6 +89,7 @@ public class Main {
 因为每一个线程都有其自己的中断策略，所有你不应该中断线程，除非你知道中断对这个线程意味着什么。
 
 有两种处理 InterruptException 的使用策略：
+
 - 传递异常，将异常往上级抛；
 - 保存中断状态，上层调用栈中的代码能够对其进行处理。
 
@@ -149,7 +154,9 @@ public class FileSearch implements Runnable {
 	}
 }
 ```
+
 Main.java启动这个线程，如果10秒没有找到就取消任务：
+
 ```java
 import java.util.concurrent.TimeUnit;
 
@@ -167,6 +174,7 @@ public class Main {
 ExecutorService.Submit会返回一个Future来描述任务。Future有一个cancel方法，它需要一个boolean类型的参数mayInterruptIfRunning，它的返回值表示取消尝试是否成功。当mayInterruptIfRunning为true，并且任务当前正在运行于一些线程中，那么这个线程是应该中断的。把这个参数设置成false意味着“如果还没有启动的话，不要运行这个任务”，这应该用于那些不处理中断的任务。
 
 并不是所有的阻塞方法或阻塞机制都响应中断。对于那些被不可中断的活动所阻塞的线程，我们可以使用与中断类似的手段，来确保停止这些线程。
+
 - java.io中的同步Socket I/O。在服务器应用程序中，阻塞I/O最常见的形式是读取和写入Socket。不幸的是，InputStream和OutputStream中的read和write方法都不响应中断，但是通过关闭底层的Socket，可以让read和write所阻塞的线程抛出一个SocketException。
 - java.nio中的同步I/O。中断一个InterruptibleChannel的线程，会导致抛出CLosedByInterruptException，并关闭链路（也会导致其他线程在这条链路的阻塞，抛出CloseByInterruptException）。关闭一个InterruptibleException导致多个阻塞在链路操作上的线程抛出AsynchronousCloseException。
 - Selector的异步I/O。如果一个线程阻塞于Selector.select方法，close方法会导致它通过抛出ClosedSelectorException提前返回。
@@ -237,6 +245,7 @@ public class FileClock implements Runnable {
 	}
 }
 ```
+
 ```java
 import java.util.concurrent.TimeUnit;
 
@@ -274,6 +283,7 @@ public class DataSourceLoader implements Runnable {
 	}
 }
 ```
+
 ```java
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -292,6 +302,7 @@ public class NetworkConnectionsLoader implements Runnable {
 	}
 }
 ```
+
 ```java
 import java.util.Date;
 
@@ -355,6 +366,7 @@ public class CleanerTask extends Thread {
 	}
 }
 ```
+
 ```java
 import java.util.Date;
 
@@ -375,6 +387,7 @@ public class Event {
 	}
 }
 ```
+
 ```java
 import java.util.Date;
 import java.util.Deque;
@@ -403,6 +416,7 @@ public class WriterTask implements Runnable {
 	}
 }
 ```
+
 ```java
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -435,6 +449,7 @@ public class Task implements Runnable {
 	}
 }
 ```
+
 ```java
 import java.lang.Thread.UncaughtExceptionHandler;
 
@@ -451,6 +466,7 @@ public class ExceptionHandler implements UncaughtExceptionHandler {
 	}
 }
 ```
+
 ```java
 public class Main {
 	public static void main(String[] args) {
@@ -499,6 +515,7 @@ public class SearchTask implements Runnable {
 	}
 }
 ```
+
 ```java
 public class Result {
 	private String name;
@@ -512,6 +529,7 @@ public class Result {
 	}
 }
 ```
+
 ```java
 import java.util.concurrent.TimeUnit;
 
@@ -564,6 +582,7 @@ public class MyThreadGroup extends ThreadGroup {
 	}
 }
 ```
+
 ```java
 import java.util.Random;
 
@@ -584,6 +603,7 @@ public class Task implements Runnable {
 	}
 }
 ```
+
 ```java
 public class Main {
 	public static void main(String[] args) {
@@ -639,6 +659,7 @@ public class MyThreadFactory implements ThreadFactory {
 	}
 }
 ```
+
 ```java
 import java.util.concurrent.TimeUnit;
 
@@ -655,6 +676,7 @@ public class Task implements Runnable {
 
 }
 ```
+
 ```java
 public class Main {
 	public static void main(String[] args) {
